@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>HA Finanzas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+  <header class="comic-title">
+    <h1>💰 Finanzas</h1>
+    <nav id="tabs">
+      <button data-tab="dashboard" class="tab active">Dashboard</button>
+      <button data-tab="accounts" class="tab">Cuentas</button>
+      <button data-tab="month" class="tab">Mes</button>
+      <button data-tab="provisions" class="tab">Provisiones</button>
+      <button data-tab="categories" class="tab">Categorías</button>
+      <button data-tab="import" class="tab">Importar</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard" class="tab-panel active">
+      <div class="panel hero">
+        <div class="label">Saldo total (todas las cuentas)</div>
+        <div class="value" id="total-balance">—</div>
+      </div>
+      <div class="panel">
+        <h2>Últimos meses</h2>
+        <div id="months-chart" class="months-chart"></div>
+      </div>
+      <div class="panel">
+        <h2>Cuentas</h2>
+        <div id="accounts-strip" class="accounts-strip"></div>
+      </div>
+    </section>
+
+    <!-- ACCOUNTS -->
+    <section id="tab-accounts" class="tab-panel">
+      <div class="panel">
+        <h2>Cuentas · detalle</h2>
+        <div id="accounts-select"></div>
+        <div id="account-detail"></div>
+      </div>
+    </section>
+
+    <!-- MONTH -->
+    <section id="tab-month" class="tab-panel">
+      <div class="panel">
+        <h2>Desglose mensual</h2>
+        <label>Mes: <input type="month" id="month-picker" /></label>
+        <div id="month-breakdown"></div>
+      </div>
+      <div class="panel">
+        <h3>Top comercios (gasto)</h3>
+        <div id="month-merchants"></div>
+      </div>
+    </section>
+
+    <!-- PROVISIONS -->
+    <section id="tab-provisions" class="tab-panel">
+      <div class="panel">
+        <h2>Provisiones sugeridas</h2>
+        <p class="hint">Media de gasto/ingreso por categoría en los últimos
+          6 y 12 meses (traspasos excluidos).</p>
+        <div id="provisions-list"></div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section id="tab-categories" class="tab-panel">
+      <div class="panel">
+        <h2>Categorías</h2>
+        <div class="row">
+          <button id="new-cat" class="btn">+ Nueva categoría</button>
+        </div>
+        <div id="categories-list"></div>
+      </div>
+    </section>
+
+    <!-- IMPORT -->
+    <section id="tab-import" class="tab-panel">
+      <div class="panel">
+        <h2>Importar extracto bancario</h2>
+        <p class="hint">Arrastra un fichero <code>.xls</code> de Openbank
+          (u otros bancos soportados), o suéltalo en
+          <code>/share/ha_finanzas/inbox/</code> para ingesta automática.</p>
+        <form id="upload-form">
+          <input type="file" id="upload-file" name="file" required />
+          <button type="submit" class="btn primary">Subir e ingestar</button>
+        </form>
+        <pre id="upload-result"></pre>
+      </div>
+    </section>
+  </main>
+
+  <template id="cat-row">
+    <div class="cat-row">
+      <span class="cat-swatch"></span>
+      <span class="cat-kind"></span>
+      <span class="cat-name"></span>
+      <span class="cat-actions">
+        <button class="btn small edit">Editar</button>
+        <button class="btn small danger delete">Eliminar</button>
+      </span>
+    </div>
+  </template>
+
+  <script src="static/app.js"></script>
+</body>
+</html>

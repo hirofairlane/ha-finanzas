@@ -1,0 +1,43 @@
+---
+name: "HA Finanzas"
+description: >-
+  Personal-finance brain for Home Assistant. Ingests bank statement exports
+  (Openbank .xls today, ING/BBVA/others planned), stores movements in an
+  isolated SQLite DB, categorises them with editable rules, deduplicates
+  overlapping imports, and detects inter-account transfers so the global
+  view treats all accounts as one. Comic-styled ingress dashboard.
+version: "0.1.0"
+slug: "ha_finanzas"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armhf
+  - armv7
+  - i386
+url: "https://github.com/hirofairlane/ha-finanzas"
+startup: services
+boot: auto
+homeassistant_api: false
+hassio_api: false
+host_network: false
+homeassistant_config: false
+ingress: true
+ingress_port: 8123
+panel_icon: mdi:cash-multiple
+panel_title: "Finanzas"
+panel_admin: false
+map:
+  - share:rw
+options:
+  log_level: "info"
+  currency: "EUR"
+  transfer_window_days: 3
+  transfer_amount_tolerance: 0.01
+  watch_share_dir: true
+schema:
+  log_level: "list(trace|debug|info|notice|warning|error|fatal)?"
+  currency: "str"
+  transfer_window_days: "int(0,30)"
+  transfer_amount_tolerance: "float(0,10)"
+  watch_share_dir: "bool"

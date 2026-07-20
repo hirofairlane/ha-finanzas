@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+*.egg-info/
+
+# Local dev artefacts (never commit real bank data)
+/tmp/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Sample statement kept locally for iteration only; DO NOT commit
+/Movimientos de Cuenta.xls
+/share/
+/data/
+
+.DS_Store

@@ -1,0 +1,184 @@
+/* HA Finanzas — comic-styled dashboard.
+   Matches the visual language of the user's other HA "comic" apps:
+   bold black borders, warm paper background, chunky shadows, uppercase
+   dashed section titles, playful accent colors. */
+
+:root {
+  --ink: #1f1d1a;
+  --paper: #f4ecd8;
+  --cream: #fff5d6;
+  --panel: #ffffff;
+  --accent: #ff6f3c;
+  --ok: #4caf50;
+  --warn: #ffb300;
+  --danger: #e53935;
+  --muted: #777;
+  --shadow: 5px 5px 0 var(--ink);
+  --shadow-lg: 7px 7px 0 var(--ink);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Verdana', 'Helvetica Neue', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 18px;
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+header.comic-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+header.comic-title h1 {
+  font-weight: 900; font-size: 32px; letter-spacing: -1px;
+  background: var(--cream);
+  padding: 6px 14px;
+  border: 3px solid var(--ink);
+  box-shadow: var(--shadow);
+  margin: 0;
+}
+
+nav#tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab {
+  font-family: inherit; font-weight: 700; font-size: 13px;
+  text-transform: uppercase; letter-spacing: 1px;
+  background: var(--panel);
+  border: 3px solid var(--ink);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.05s ease;
+}
+.tab:hover { transform: translate(-1px, -1px); }
+.tab.active { background: var(--accent); color: #fff; }
+
+main { display: grid; gap: 18px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: grid; gap: 18px; }
+
+.panel {
+  background: var(--panel);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+.panel h2, .panel h3 {
+  margin: 0 0 12px;
+  text-transform: uppercase; letter-spacing: 2px;
+  border-bottom: 2px dashed var(--ink);
+  padding-bottom: 6px;
+}
+
+.label {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 2px;
+}
+.value {
+  font-size: 44px; font-weight: 900; line-height: 1.1;
+  margin-top: 4px;
+}
+.hero .value { color: var(--accent); }
+
+.hint { color: var(--muted); font-size: 13px; }
+code {
+  background: var(--cream); border: 1px solid var(--ink);
+  padding: 1px 5px; border-radius: 4px; font-size: 12px;
+}
+
+.row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+.btn {
+  font-family: inherit; font-weight: 700; font-size: 13px;
+  background: var(--cream); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 8px;
+  padding: 6px 12px; cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.btn:hover { transform: translate(-1px, -1px); }
+.btn.small { font-size: 11px; padding: 3px 8px; box-shadow: 2px 2px 0 var(--ink); }
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.danger  { background: var(--danger); color: #fff; }
+
+.months-chart { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: 8px; }
+.month-card {
+  border: 3px solid var(--ink); border-radius: 8px;
+  padding: 8px; background: var(--cream);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.month-card .m-label { font-size: 12px; font-weight: 900; }
+.month-card .m-net { font-size: 20px; font-weight: 900; margin-top: 4px; }
+.month-card .m-detail { font-size: 11px; color: var(--muted); }
+.month-card .pos { color: var(--ok); }
+.month-card .neg { color: var(--danger); }
+
+.accounts-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 10px; }
+.account-card {
+  border: 3px solid var(--ink); border-radius: 10px;
+  padding: 12px; background: #fff;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.account-card .a-bank { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
+.account-card .a-alias { font-weight: 900; font-size: 15px; }
+.account-card .a-iban { font-family: monospace; font-size: 11px; color: var(--muted); word-break: break-all; }
+.account-card .a-balance { font-size: 22px; font-weight: 900; margin-top: 6px; color: var(--accent); }
+
+.cat-list { display: flex; flex-direction: column; gap: 8px; }
+.cat-row {
+  display: grid; grid-template-columns: 24px 90px 1fr auto;
+  gap: 10px; align-items: center;
+  border: 2px solid var(--ink); border-radius: 8px;
+  padding: 8px 10px; background: #fff;
+}
+.cat-swatch { width: 18px; height: 18px; border: 2px solid var(--ink); border-radius: 4px; }
+.cat-kind {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 2px;
+  padding: 2px 6px; border: 2px solid var(--ink); border-radius: 4px;
+  text-align: center; font-weight: 900;
+}
+.cat-kind.gasto { background: #ffe0d6; }
+.cat-kind.ingreso { background: #d6f5d6; }
+.cat-name { font-weight: 700; }
+
+.tx-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tx-table th, .tx-table td { padding: 6px 8px; border-bottom: 1px dashed #ccc; text-align: left; }
+.tx-table th { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.tx-table td.num { text-align: right; font-family: monospace; }
+.tx-table td.neg { color: var(--danger); font-weight: 700; }
+.tx-table td.pos { color: var(--ok); font-weight: 700; }
+.tx-table .pill {
+  display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 999px;
+  border: 2px solid var(--ink); background: var(--cream); font-weight: 700;
+}
+.tx-table tr.is-transfer { opacity: 0.55; }
+.tx-table tr.is-transfer td::after { }
+
+.provision-row {
+  display: grid; grid-template-columns: 24px 1fr auto auto; gap: 12px;
+  align-items: center; padding: 8px 0; border-bottom: 1px dashed #ccc;
+}
+.provision-row .p-name { font-weight: 700; }
+.provision-row .p-amount { font-family: monospace; font-weight: 900; }
+.provision-row .p-6m { color: var(--accent); }
+.provision-row .p-12m { color: var(--muted); font-size: 12px; }
+
+pre#upload-result {
+  background: var(--cream); border: 2px solid var(--ink);
+  padding: 10px; border-radius: 6px; overflow: auto;
+  font-size: 12px;
+}
+
+input[type="file"], input[type="month"], input[type="text"], select {
+  font-family: inherit; font-size: 13px;
+  background: var(--cream); border: 2px solid var(--ink);
+  border-radius: 6px; padding: 5px 8px;
+}

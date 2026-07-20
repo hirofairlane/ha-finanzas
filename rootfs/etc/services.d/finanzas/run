@@ -1,0 +1,19 @@
+#!/usr/bin/with-contenv bashio
+set -e
+
+export HA_FINANZAS_LOG_LEVEL="$(bashio::config 'log_level')"
+export HA_FINANZAS_CURRENCY="$(bashio::config 'currency')"
+export HA_FINANZAS_TRANSFER_WINDOW_DAYS="$(bashio::config 'transfer_window_days')"
+export HA_FINANZAS_TRANSFER_AMOUNT_TOLERANCE="$(bashio::config 'transfer_amount_tolerance')"
+export HA_FINANZAS_WATCH_SHARE_DIR="$(bashio::config 'watch_share_dir')"
+export HA_FINANZAS_DB_PATH="/data/finanzas.db"
+export HA_FINANZAS_INBOX_DIR="/share/ha_finanzas/inbox"
+export HA_FINANZAS_ARCHIVE_DIR="/share/ha_finanzas/archive"
+
+bashio::log.info "Starting HA Finanzas"
+bashio::log.info "  db      -> ${HA_FINANZAS_DB_PATH}"
+bashio::log.info "  inbox   -> ${HA_FINANZAS_INBOX_DIR}"
+bashio::log.info "  archive -> ${HA_FINANZAS_ARCHIVE_DIR}"
+
+export PYTHONPATH="/opt"
+exec python3 -u -m finanzas.main
