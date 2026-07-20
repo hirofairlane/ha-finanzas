@@ -170,6 +170,24 @@ code {
 .provision-row .p-amount { font-family: monospace; font-weight: 900; }
 .provision-row .p-6m { color: var(--accent); }
 .provision-row .p-12m { color: var(--muted); font-size: 12px; }
+.provision-row.clickable { cursor: pointer; transition: background 0.1s; }
+.provision-row.clickable:hover { background: var(--cream); }
+.provision-row.selected {
+  background: var(--cream); border: 2px solid var(--ink); border-radius: 6px;
+  padding-left: 8px; padding-right: 8px;
+}
+.provision-row .p-name .cat-kind { margin-right: 8px; vertical-align: middle; }
+.provision-row .bar {
+  background: #eee; border: 2px solid var(--ink);
+  height: 10px; border-radius: 4px; overflow: hidden; margin-top: 4px;
+}
+.provision-row .bar > div { height: 100%; }
+
+.inline-cat {
+  margin-top: 6px; padding: 8px; background: var(--cream);
+  border: 2px dashed var(--ink); border-radius: 6px;
+}
+.inline-cat .row { margin-bottom: 6px; }
 
 pre#upload-result {
   background: var(--cream); border: 2px solid var(--ink);

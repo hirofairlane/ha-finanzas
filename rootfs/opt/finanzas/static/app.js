@@ -105,32 +105,62 @@ function renderTxTable(rows) {
 }
 
 /* ---------- Month breakdown ---------- */
+let _allCategories = [];      // cached for the inline picker
+async function ensureCategories() {
+  if (!_allCategories.length) {
+    const { categories } = await api("api/categories");
+    _allCategories = categories;
+  }
+  return _allCategories;
+}
+function invalidateCategories() { _allCategories = []; }
+
 async function loadMonth() {
   const picker = document.getElementById("month-picker");
   if (!picker.value) {
     const d = new Date();
     picker.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
   }
-  const render = async () => {
+
+  const render = async (highlightCatId = null) => {
+    await ensureCategories();
     const { categories, top_merchants } = await api(`api/month?month=${picker.value}`);
     const box = document.getElementById("month-breakdown");
-    if (!categories.length) { box.innerHTML = "<p class='hint'>Sin datos.</p>"; return; }
+    if (!categories.length) {
+      box.innerHTML = "<p class='hint'>Sin datos.</p>";
+      document.getElementById("month-txs").innerHTML = "";
+      return;
+    }
     const max = Math.max(...categories.map(c => Math.abs(c.total || 0))) || 1;
     box.innerHTML = categories.map((c) => {
       const pct = Math.round((Math.abs(c.total||0) / max) * 100);
-      const color = c.color || "#ff6f3c";
-      return `<div class="provision-row">
+      const color = c.color || "#bdbdbd";
+      const kind = c.kind || "gasto";
+      const isSel = highlightCatId != null && c.id == highlightCatId;
+      return `<div class="provision-row clickable ${isSel ? 'selected' : ''}"
+                   data-cat-id="${c.id ?? ''}" data-cat-kind="${kind}">
         <span class="cat-swatch" style="background:${color}"></span>
         <div>
-          <div class="p-name">${c.name || "(sin categoría)"}</div>
-          <div style="background:#eee;border:2px solid var(--ink);height:10px;border-radius:4px;overflow:hidden;margin-top:4px">
-            <div style="background:${color};width:${pct}%;height:100%"></div>
+          <div class="p-name">
+            <span class="cat-kind ${kind}">${kind}</span>
+            ${c.name || "(sin categoría)"}
           </div>
+          <div class="bar"><div style="background:${color};width:${pct}%"></div></div>
         </div>
         <div class="p-amount">${fmt(c.total)}</div>
         <div class="hint">${c.n} mov.</div>
       </div>`;
     }).join("");
+
+    box.querySelectorAll(".provision-row.clickable").forEach((row) => {
+      row.onclick = () => {
+        const cid = row.dataset.catId;
+        loadMonthTxs(picker.value, cid || null);
+        // re-highlight without a full reload
+        box.querySelectorAll(".provision-row").forEach(r => r.classList.remove("selected"));
+        row.classList.add("selected");
+      };
+    });
 
     const mbox = document.getElementById("month-merchants");
     mbox.innerHTML = top_merchants.length
@@ -141,9 +171,98 @@ async function loadMonth() {
           <div class="hint">${m.n} mov.</div>
         </div>`).join("")
       : "<p class='hint'>Sin datos.</p>";
+
+    // Default: show all txs of the month.
+    if (highlightCatId === null) await loadMonthTxs(picker.value, null);
   };
-  picker.onchange = render;
-  await render();
+
+  picker.onchange = () => render(null);
+  await render(null);
+}
+
+async function loadMonthTxs(month, categoryId) {
+  await ensureCategories();
+  const params = new URLSearchParams({ month, limit: "500" });
+  if (categoryId) params.set("category", categoryId);
+  const { transactions } = await api(`api/transactions?${params}`);
+  const box = document.getElementById("month-txs");
+  const title = categoryId
+    ? `Movimientos filtrados (${transactions.length})`
+    : `Movimientos del mes (${transactions.length})`;
+  box.innerHTML = `<h3>${title}</h3>${renderTxTableEditable(transactions)}`;
+  wireInlineCategorise(box);
+}
+
+function renderTxTableEditable(rows) {
+  if (!rows.length) return "<p class='hint'>Sin movimientos.</p>";
+  const body = rows.map((t) => {
+    const cls = t.amount < 0 ? "neg" : "pos";
+    const trCls = t.is_transfer ? "is-transfer" : "";
+    const kind = t.amount > 0 ? "ingreso" : "gasto";
+    const catCell = t.category_name
+      ? `<span class="pill" style="background:${t.category_color||'#fff5d6'}">${t.category_name}</span>`
+      : `<span class="pill" style="background:#eee">sin cat.</span>`;
+    const merch = t.merchant_name ? ` <b>${t.merchant_name}</b>` : "";
+    const xfer = t.is_transfer ? ` <span class="pill">↔ traspaso</span>` : "";
+    return `<tr class="${trCls}" data-tx-id="${t.id}" data-merchant-id="${t.merchant_id||''}" data-kind="${kind}">
+      <td>${t.op_date}</td>
+      <td>
+        <div>${catCell}${merch}${xfer}</div>
+        <div class="hint">${t.concept}</div>
+        <div class="inline-cat" hidden></div>
+      </td>
+      <td class="num ${cls}">${fmt(t.amount)}</td>
+      <td class="num">${fmt(t.balance)}</td>
+      <td><button class="btn small edit-cat">Categoría</button></td>
+    </tr>`;
+  }).join("");
+  return `<table class="tx-table">
+    <thead><tr><th>Fecha</th><th>Concepto</th><th>Importe</th><th>Saldo</th><th></th></tr></thead>
+    <tbody>${body}</tbody></table>`;
+}
+
+function wireInlineCategorise(scope) {
+  scope.querySelectorAll("button.edit-cat").forEach((btn) => {
+    btn.onclick = () => {
+      const tr = btn.closest("tr");
+      const kind = tr.dataset.kind;
+      const merchantId = tr.dataset.merchantId || null;
+      const box = tr.querySelector(".inline-cat");
+      const opts = _allCategories
+        .filter((c) => c.kind === kind)
+        .map((c) => `<option value="${c.id}">${c.name}</option>`).join("");
+      const cascade = merchantId
+        ? `<label><input type="checkbox" class="cascade" checked /> aplicar a todos los movimientos de este comercio</label>`
+        : `<span class="hint">sin comercio detectado — sólo esta fila</span>`;
+      box.innerHTML = `
+        <div class="row">
+          <select class="cat-select">${opts}</select>
+          <button class="btn small primary save">Guardar</button>
+          <button class="btn small cancel">Cancelar</button>
+        </div>
+        <div>${cascade}</div>`;
+      box.hidden = false;
+
+      box.querySelector(".cancel").onclick = () => { box.hidden = true; box.innerHTML = ""; };
+      box.querySelector(".save").onclick = async () => {
+        const catId = parseInt(box.querySelector(".cat-select").value, 10);
+        const cascadeChecked = box.querySelector(".cascade")?.checked;
+        if (merchantId && cascadeChecked) {
+          await fetch(`api/merchants/${merchantId}/categorise`, {
+            method: "POST", headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ category_id: catId }),
+          });
+        } else {
+          await fetch(`api/transactions/${tr.dataset.txId}/categorise`, {
+            method: "POST", headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({ category_id: catId, merchant_id: merchantId ? parseInt(merchantId,10) : null }),
+          });
+        }
+        // Reload month view to reflect the change.
+        await loadMonth();
+      };
+    };
+  });
 }
 
 /* ---------- Provisions ---------- */
@@ -185,7 +304,7 @@ async function loadCategories() {
     const id = e.target.closest(".cat-row").dataset.id;
     if (!confirm("¿Eliminar categoría?")) return;
     await api(`api/categories/${id}`, { method: "DELETE" });
-    loadCategories();
+    invalidateCategories(); loadCategories();
   });
   box.querySelectorAll(".edit").forEach((b) => b.onclick = async (e) => {
     const row = e.target.closest(".cat-row");
@@ -197,7 +316,7 @@ async function loadCategories() {
       method: "POST", headers: {"Content-Type":"application/json"},
       body: JSON.stringify({ ...cur, name, color }),
     });
-    loadCategories();
+    invalidateCategories(); loadCategories();
   });
 }
 

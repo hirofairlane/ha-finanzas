@@ -181,9 +181,10 @@ async def api_transactions(req: web.Request) -> web.Response:
         rows = _rows(conn.execute(
             f"SELECT t.id, t.op_date, t.concept, t.amount, t.balance,"
             f"  t.is_transfer, t.transfer_peer,"
+            f"  t.category_id, t.merchant_id,"
             f"  a.alias AS account_alias, a.bank AS bank,"
             f"  c.name AS category_name, c.color AS category_color,"
-            f"  c.icon AS category_icon,"
+            f"  c.kind AS category_kind, c.icon AS category_icon,"
             f"  m.name AS merchant_name"
             f" FROM transactions t"
             f" JOIN accounts a ON a.id=t.account_id"
@@ -208,6 +209,25 @@ async def api_tx_recategorise(req: web.Request) -> web.Response:
             (body.get("category_id"), body.get("merchant_id"), tid),
         )
         return web.json_response({"updated": tid})
+    finally:
+        conn.close()
+
+
+async def api_merchant_categorise(req: web.Request) -> web.Response:
+    """Set a merchant's category and cascade to every transaction with that
+    merchant (both those without a category and those already categorised).
+    Returns the number of transactions updated."""
+    mid = int(req.match_info["mid"])
+    body = await req.json()
+    cat_id = body.get("category_id")
+    conn = dbmod.connect()
+    try:
+        conn.execute("UPDATE merchants SET category_id=? WHERE id=?", (cat_id, mid))
+        cur = conn.execute(
+            "UPDATE transactions SET category_id=? WHERE merchant_id=?",
+            (cat_id, mid),
+        )
+        return web.json_response({"merchant_id": mid, "updated_tx": cur.rowcount})
     finally:
         conn.close()
 
@@ -259,4 +279,5 @@ def routes(router: web.UrlDispatcher) -> None:
     router.add_delete("/api/categories/{cid}", api_category_delete)
     router.add_get("/api/transactions", api_transactions)
     router.add_post("/api/transactions/{tid}/categorise", api_tx_recategorise)
+    router.add_post("/api/merchants/{mid}/categorise", api_merchant_categorise)
     router.add_post("/api/upload", api_upload)
